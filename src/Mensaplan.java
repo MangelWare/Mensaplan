@@ -19,7 +19,7 @@ public class Mensaplan {
                 Calendar cal = new GregorianCalendar();
                 cal.setTimeInMillis(System.currentTimeMillis());
                 day = getDayName(cal.get(Calendar.DAY_OF_WEEK));
-                System.out.print("Heute");
+                System.out.printf("Heute, %s",day);
             }
 
             System.out.println(" in der Mensa Academica:");
