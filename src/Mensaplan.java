@@ -5,24 +5,11 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 public class Mensaplan {
     public static void main(String[] args) {
         try {
-            String day;
-            if(args.length>0) {
-                day = args[0];
-                System.out.print(day);
-            } else {
-                Calendar cal = new GregorianCalendar();
-                cal.setTimeInMillis(System.currentTimeMillis());
-                day = getDayName(cal.get(Calendar.DAY_OF_WEEK));
-                System.out.printf("Heute, %s",day);
-            }
-
-            System.out.println(" in der Mensa Academica:");
+            String day = args.length>0 ? args[0] : "Heute";
 
             if(!isWeekDay(day))
                 throw new NotAWeekdayException(day);
@@ -34,13 +21,8 @@ public class Mensaplan {
 
     }
 
-    private static String getDayName(int d) {
-        String[] names  = {"Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"};
-        return names[(d%7)-1];
-    }
-
     private static boolean isWeekDay(String day) {
-        return Arrays.asList(new String[]{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag","Sonntag"}).contains(day);
+        return Arrays.asList(new String[]{"Heute","Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"}).contains(day);
     }
 
     private static int maxLength(String[] arr) {
@@ -55,7 +37,17 @@ public class Mensaplan {
 
     private static void printDayMenu(String weekday) throws IOException {
         Document page = Jsoup.connect("https://www.studierendenwerk-aachen.de/speiseplaene/academica-w.html").get();
-        Element dayCard = page.selectFirst("#"+weekday);
+        Element dayCard = weekday.equals("Heute") ? page.selectFirst(".active-panel") : page.selectFirst("#"+weekday);
+
+        if(dayCard == null) {
+            System.err.printf("\nError: Keine Essensdaten für \"%s\"!",weekday);
+            System.exit(1);
+        }
+
+        if(weekday.equals("Heute"))
+            System.out.print("Heute, ");
+        System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa Academica:");
+
         Element dayMenu = dayCard.selectFirst(".menues");
         Elements menues = dayMenu.select("tr");
         Elements sups = menues.select("sup");
