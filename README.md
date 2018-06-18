@@ -26,5 +26,7 @@ echo 'alias mensaplan="/.../mensaplan.sh" >> ~/.bashrc'
 #### Windows
 Führe das Batch-File `mensaplan.bat` im Wurzelverzeichnis des Repository aus.
 
+Wenn du das Programm aus der CMD per Befehl aufrufen möchtest, füge das Verzeichis des Repository zu der Systemumgebungsvariable `PATH`, getrennt durch ein Semikolon, hinzu.
+
 #### Andere
 Hierfür ist noch kein komfortables Shellskript verfügbar. Benutze `java -Dfile.encoding=UTF-8 -classpath <Pfad des Repository>/out/production/Mensaplan:<Pfad des Repository>/jsoup-1.11.2.jar Mensaplan`.
