@@ -44,6 +44,7 @@ public class Mensaplan {
             System.exit(1);
         }
 
+        System.out.println();
         if(weekday.equals("Heute"))
             System.out.print("Heute, ");
         System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa Academica:");
@@ -56,26 +57,41 @@ public class Mensaplan {
         }
         String[] typ = new String[menues.size()];
         String[] gericht = new String[menues.size()];
+        String[] preis = new String[menues.size()];
         for (int i = 0; i < menues.size(); i++) {
             typ[i] = menues.get(i).selectFirst(".menue-item.menue-category").text();
             gericht[i] = menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr").text().substring(1);
+            preis[i] = menues.get(i).selectFirst(".menue-item.menue-price.large-price").text();
         }
 
-        System.out.println("----------------------------------------------------------------------------------------");
+        for (int i = 0; i < maxLength(typ)+maxLength(gericht)+maxLength(preis)+5; i++) {
+            System.out.print("-");
+        }
+        System.out.println();
         System.out.print("Typ");
         for (int j = 0; j < maxLength(typ)-1; j++) {
             System.out.print(" ");
         }
-        System.out.println("Gericht");
-        System.out.println("----------------------------------------------------------------------------------------");
-
+        System.out.print("Gericht");
+        for (int j = 0; j < maxLength(gericht)-6; j++) {
+            System.out.print(" ");
+        }
+        System.out.println("Preis");
+        for (int i = 0; i < maxLength(typ)+maxLength(gericht)+maxLength(preis)+5; i++) {
+            System.out.print("-");
+        }
+        System.out.println();
 
         for (int i = 0; i <menues.size() ; i++) {
             System.out.print(typ[i]+":");
             for (int j = 0; j < maxLength(typ)+1-typ[i].length(); j++) {
                 System.out.print(" ");
             }
-            System.out.println(gericht[i]);
+            System.out.print(gericht[i]);
+            for (int j = 0; j < maxLength(gericht)+1-gericht[i].length(); j++) {
+                System.out.print(".");
+            }
+            System.out.println(preis[i]);
         }
     }
 
