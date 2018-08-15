@@ -59,9 +59,12 @@ public class Mensaplan {
         String[] gericht = new String[menues.size()];
         String[] preis = new String[menues.size()];
         for (int i = 0; i < menues.size(); i++) {
-            typ[i] = menues.get(i).selectFirst(".menue-item.menue-category").text();
-            gericht[i] = menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr").text().substring(1);
-            preis[i] = menues.get(i).selectFirst(".menue-item.menue-price.large-price").text();
+            typ[i] = menues.get(i).selectFirst(".menue-item.menue-category")!= null ?
+                    menues.get(i).selectFirst(".menue-item.menue-category").text() : "N/A";
+            gericht[i] = menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr")!=null ?
+                    menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr").text().substring(1) : "N/A";
+            preis[i] = menues.get(i).selectFirst(".menue-item.menue-price.large-price") != null ?
+                    menues.get(i).selectFirst(".menue-item.menue-price.large-price").text() : "N/A";
         }
 
         for (int i = 0; i < maxLength(typ)+maxLength(gericht)+maxLength(preis)+5; i++) {
