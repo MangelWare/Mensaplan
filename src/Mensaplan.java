@@ -5,20 +5,58 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.Stack;
 
 public class Mensaplan {
     public static void main(String[] args) {
+
         try {
-            String day = args.length>0 ? args[0] : "Heute";
+            String day = "Heute";
+            RWTHMensa mensa = RWTHMensa.ACADEMICA;
+
+            Stack<LinkedList<String>> arguments = new Stack<>();
+            for(int i = 0; i<args.length;i++) {
+                if (args[i].startsWith("-")) {
+                    LinkedList<String> l = new LinkedList<String>(){
+                        @Override
+                        public String toString() {
+                            if(!this.isEmpty()){
+                                return this.removeFirst() + this.toString();
+                            } else { return ""; }
+                        }
+                    };
+                    l.add(args[i]);
+                    arguments.push(l);
+                } else {
+                    if(!arguments.isEmpty())
+                        arguments.peek().add(args[i]);
+                }
+            }
+
+            while(!arguments.isEmpty()) {
+                LinkedList<String> l = arguments.pop();
+                String cmd = l.removeFirst();
+                String options = l.toString();
+
+                switch(cmd) {
+                    case "-d":   day = options;
+                                break;
+                    case "-m":   mensa = RWTHMensa.closestMensa(options);
+                                break;
+                    default:    System.err.println("Invalid Argument: "+cmd+"\nTry -h for help!");
+                                System.exit(1);
+                }
+            }
 
             if(!isWeekDay(day))
                 throw new NotAWeekdayException(day);
 
-            printDayMenu(day);
+            printDayMenu(day,mensa);
 
         } catch(IOException e) {e.printStackTrace();}
         catch(NotAWeekdayException e) {e.printWeekday();}
-
     }
 
     private static boolean isWeekDay(String day) {
@@ -35,8 +73,8 @@ public class Mensaplan {
         return res;
     }
 
-    private static void printDayMenu(String weekday) throws IOException {
-        Document page = Jsoup.connect("https://www.studierendenwerk-aachen.de/speiseplaene/academica-w.html").get();
+    private static void printDayMenu(String weekday,RWTHMensa mensa) throws IOException {
+        Document page = Jsoup.connect("https://www.studierendenwerk-aachen.de/speiseplaene/"+mensa.name().toLowerCase()+"-w.html").get();
         Element dayCard = weekday.equals("Heute") ? page.selectFirst(".active-panel") : page.selectFirst("#"+weekday);
 
         if(dayCard == null) {
@@ -47,7 +85,7 @@ public class Mensaplan {
         System.out.println();
         if(weekday.equals("Heute"))
             System.out.print("Heute, ");
-        System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa Academica:");
+        System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa "+mensa.getName()+":");
 
         Element dayMenu = dayCard.selectFirst(".menues");
         Elements menues = dayMenu.select("tr");
