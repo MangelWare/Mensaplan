@@ -1,6 +1,9 @@
 # Mensaplan
 Ein Konsolentool für den Tagesplan der Mensa Academica Aachen
 
+> **Warning**
+> Die untenstehenden Anleitungen sind seit der Umstellung auf Maven nicht mehr aktuell!
+
 ## Voraussetzungen
 
 Du brauchst nur eine funktionierende (am besten halbwegs aktuelle) JRE.
