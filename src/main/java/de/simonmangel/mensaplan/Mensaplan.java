@@ -83,7 +83,6 @@ public class Mensaplan {
             System.exit(1);
         }
 
-        System.out.println();
         if(weekday.equals("Heute"))
             System.out.print("Heute, ");
         System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa "+mensa.getName()+":");
@@ -106,10 +105,10 @@ public class Mensaplan {
                     menues.get(i).selectFirst(".menue-item.menue-price.large-price").text() : "N/A";
         }
 
-        for (int i = 0; i < maxLength(typ)+maxLength(gericht)+maxLength(preis)+5; i++) {
-            System.out.print("-");
-        }
-        System.out.println();
+        int vLineLen = maxLength(typ)+maxLength(gericht)+maxLength(preis)+5;
+        String vLine = "-".repeat(vLineLen);
+
+        System.out.println(vLine);
         System.out.print("Typ");
         for (int j = 0; j < maxLength(typ)-1; j++) {
             System.out.print(" ");
@@ -119,10 +118,8 @@ public class Mensaplan {
             System.out.print(" ");
         }
         System.out.println("Preis");
-        for (int i = 0; i < maxLength(typ)+maxLength(gericht)+maxLength(preis)+5; i++) {
-            System.out.print("-");
-        }
-        System.out.println();
+
+        System.out.println(vLine);
 
         for (int i = 0; i <menues.size() ; i++) {
             System.out.print(typ[i]+":");
@@ -135,6 +132,8 @@ public class Mensaplan {
             }
             System.out.println(preis[i]);
         }
+
+        System.out.println(vLine);
     }
 
 
