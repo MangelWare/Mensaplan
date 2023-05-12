@@ -1,3 +1,5 @@
+package de.simonmangel.mensaplan;
+
 class NotAWeekdayException extends Exception {
     private String s;
     NotAWeekdayException(String s) {

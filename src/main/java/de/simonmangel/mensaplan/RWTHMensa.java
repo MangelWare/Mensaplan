@@ -1,3 +1,5 @@
+package de.simonmangel.mensaplan;
+
 public enum RWTHMensa {
     ACADEMICA("Academica","Mensa Academica"),
     AHORNSTRASSE("Ahornstrasse", "Mensa Ahornstrasse"),
@@ -18,9 +20,13 @@ public enum RWTHMensa {
     public static RWTHMensa closestMensa(String input) {
         int[] lDScores= new int[MENSEN.length];
         for(int i = 0; i < MENSEN.length; i++) {
-            lDScores[i] = Math.min(
+            /*lDScores[i] = Math.min(
                     LevenstheinDistance.computeLevenshteinDistance(input,MENSEN[i].longName),
                     LevenstheinDistance.computeLevenshteinDistance(input,MENSEN[i].name)
+            );*/
+            lDScores[i] = Math.min(
+                -LevenstheinDistance.LCSubStr(input.toLowerCase(), MENSEN[i].longName.toLowerCase()),
+                -LevenstheinDistance.LCSubStr(input.toLowerCase(), MENSEN[i].name.toLowerCase())
             );
         }
         return MENSEN[LevenstheinDistance.indexOfMinimum(lDScores)];

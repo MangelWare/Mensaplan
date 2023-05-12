@@ -1,3 +1,5 @@
+package de.simonmangel.mensaplan;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -6,7 +8,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Scanner;
 import java.util.Stack;
 
 public class Mensaplan {
@@ -78,7 +79,7 @@ public class Mensaplan {
         Element dayCard = weekday.equals("Heute") ? page.selectFirst(".active-panel") : page.selectFirst("#"+weekday);
 
         if(dayCard == null) {
-            System.err.printf("\nError: Keine Essensdaten für \"%s\"!",weekday);
+            System.err.printf("Error: Keine Essensdaten für \"%s\"!\n",weekday);
             System.exit(1);
         }
 

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java -Dfile.encoding=UTF-8 -classpath $DIR/out/production/Mensaplan:$DIR/jsoup-1.11.2.jar Mensaplan $1
+JAR_FILE="$HOME/.m2/repository/de/simonmangel/mensaplan/1.0-SNAPSHOT/mensaplan-1.0-SNAPSHOT-jar-with-dependencies.jar"
+java -jar "$JAR_FILE" $@
