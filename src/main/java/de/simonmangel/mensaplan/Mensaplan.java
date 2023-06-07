@@ -105,6 +105,23 @@ public class Mensaplan {
                     menues.get(i).selectFirst(".menue-item.menue-price.large-price").text() : "N/A";
         }
 
+        Elements extras = dayCard.selectFirst(".extras").select("tr");
+        extras.select("sup").remove();
+        String[] extraTypes = new String[extras.size()];
+        String[] extraMeals = new String[extras.size()];
+        for (int i = 0; i<extras.size(); i++){
+            Element extraTypeElt = extras.get(i).selectFirst(".menue-item.menue-category");
+            extraTypes[i] = extraTypeElt != null ? extraTypeElt.text() : "N/A";
+
+            Element extraMealElt = extras.get(i).selectFirst(".menue-item.menue-desc");
+            if (extraMealElt != null) {
+                extraMealElt.select(".seperator").prepend(" ").append(" ");
+                extraMeals[i] = extraMealElt.text().substring(1);
+            } else
+                extraMeals[i] = "N/A";
+            
+        }
+
         int vLineLen = maxLength(typ)+maxLength(gericht)+maxLength(preis)+5;
         String vLine = "-".repeat(vLineLen);
 
@@ -131,6 +148,17 @@ public class Mensaplan {
                 System.out.print(".");
             }
             System.out.println(preis[i]);
+        }
+
+        System.out.println(vLine);
+
+        for (int i = 0; i<extras.size(); i++) {
+            System.out.printf(
+                "%s:%s%s\n",
+                extraTypes[i],
+                " ".repeat(maxLength(typ)+1-extraTypes[i].length()),
+                extraMeals[i]
+            );
         }
 
         System.out.println(vLine);
