@@ -5,9 +5,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_LongestLine;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 public class Mensaplan {
@@ -76,95 +81,98 @@ public class Mensaplan {
 
     private static void printDayMenu(String weekday,RWTHMensa mensa) throws IOException {
         Document page = Jsoup.connect("https://www.studierendenwerk-aachen.de/speiseplaene/"+mensa.name().toLowerCase()+"-w.html").get();
-        Element dayCard = weekday.equals("Heute") ? page.selectFirst(".active-panel") : page.selectFirst("#"+weekday);
+        
+        boolean isToday = weekday.equals("Heute");
+        Element dayCard =  isToday ? page.selectFirst(".active-panel") : page.selectFirst("#"+weekday);
 
         if(dayCard == null) {
             System.err.printf("Error: Keine Essensdaten für \"%s\"!\n",weekday);
             System.exit(1);
         }
 
-        if(weekday.equals("Heute"))
-            System.out.print("Heute, ");
-        System.out.println(dayCard.parent().children().get(0).text()+" in der Mensa "+mensa.getName()+":");
+        String parsedWeekday = dayCard.parent().children().get(0).text();
 
+
+        // Parse menues
         Element dayMenu = dayCard.selectFirst(".menues");
         Elements menues = dayMenu.select("tr");
         Elements sups = menues.select("sup");
         for (Element e:sups) {
             e.remove();
         }
-        String[] typ = new String[menues.size()];
-        String[] gericht = new String[menues.size()];
-        String[] preis = new String[menues.size()];
+        List<Result.MenuEntry> menuEntries = new ArrayList<>(menues.size());
         for (int i = 0; i < menues.size(); i++) {
-            typ[i] = menues.get(i).selectFirst(".menue-item.menue-category")!= null ?
+            String type = menues.get(i).selectFirst(".menue-item.menue-category")!= null ?
                     menues.get(i).selectFirst(".menue-item.menue-category").text() : "N/A";
-            gericht[i] = menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr")!=null ?
+            String meal = menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr")!=null ?
                     menues.get(i).selectFirst(".menue-item.menue-desc").selectFirst(".expand-nutr").text().substring(1) : "N/A";
-            preis[i] = menues.get(i).selectFirst(".menue-item.menue-price.large-price") != null ?
+            String price = menues.get(i).selectFirst(".menue-item.menue-price.large-price") != null ?
                     menues.get(i).selectFirst(".menue-item.menue-price.large-price").text() : "N/A";
+            menuEntries.add(new Result.MenuEntry(type, meal, price));
         }
 
         Elements extras = dayCard.selectFirst(".extras").select("tr");
         extras.select("sup").remove();
-        String[] extraTypes = new String[extras.size()];
-        String[] extraMeals = new String[extras.size()];
+        List<Result.ExtraEntry> extraEntries = new ArrayList<>(extras.size());
         for (int i = 0; i<extras.size(); i++){
             Element extraTypeElt = extras.get(i).selectFirst(".menue-item.menue-category");
-            extraTypes[i] = extraTypeElt != null ? extraTypeElt.text() : "N/A";
+            String type = extraTypeElt != null ? extraTypeElt.text() : "N/A";
 
             Element extraMealElt = extras.get(i).selectFirst(".menue-item.menue-desc");
+            String meal;
             if (extraMealElt != null) {
                 extraMealElt.select(".seperator").prepend(" ").append(" ");
-                extraMeals[i] = extraMealElt.text().substring(1);
+                meal = extraMealElt.text().substring(1);
             } else
-                extraMeals[i] = "N/A";
+                meal = "N/A";
             
+            extraEntries.add(new Result.ExtraEntry(type, meal));
         }
 
-        int vLineLen = maxLength(typ)+maxLength(gericht)+maxLength(preis)+5;
-        String vLine = "-".repeat(vLineLen);
+        Result result = new Result(parsedWeekday, isToday, mensa, menuEntries, extraEntries);
+        printResult(result);
 
-        System.out.println(vLine);
-        System.out.print("Typ");
-        for (int j = 0; j < maxLength(typ)-1; j++) {
-            System.out.print(" ");
-        }
-        System.out.print("Gericht");
-        for (int j = 0; j < maxLength(gericht)-6; j++) {
-            System.out.print(" ");
-        }
-        System.out.println("Preis");
-
-        System.out.println(vLine);
-
-        for (int i = 0; i <menues.size() ; i++) {
-            System.out.print(typ[i]+":");
-            for (int j = 0; j < maxLength(typ)+1-typ[i].length(); j++) {
-                System.out.print(" ");
-            }
-            System.out.print(gericht[i]);
-            for (int j = 0; j < maxLength(gericht)+1-gericht[i].length(); j++) {
-                System.out.print(".");
-            }
-            System.out.println(preis[i]);
-        }
-
-        System.out.println(vLine);
-
-        for (int i = 0; i<extras.size(); i++) {
-            System.out.printf(
-                "%s:%s%s\n",
-                extraTypes[i],
-                " ".repeat(maxLength(typ)+1-extraTypes[i].length()),
-                extraMeals[i]
-            );
-        }
-
-        System.out.println(vLine);
     }
 
+    private static void printResult(Result result) {
+        // Print header line
+        String headerLine = String.format("%s%s in der Mensa %s:", result.isToday() ? "Heute, " : "", result.getWeekday(), result.getMensa().getName());
+        System.out.println(headerLine);
+
+        // Print table
+        AsciiTable at = new AsciiTable();
+        CWC_LongestLine cwc = new CWC_LongestLine();
+        at.getRenderer().setCWC(cwc);
+
+        // Top rule
+        at.addRule();
 
 
+        // Table header
+        at.addRow("Typ", "Gericht", "Preis");
+
+        // Midrule 1
+        at.addRule();
+
+        // Menu entries
+        for(Result.MenuEntry e: result.getMenuEntries()) {
+            at.addRow(e.getType(), e.getMeal(), e.getPrice());
+        }
+
+        // Midrule 2
+        at.addRule();
+
+        // Extra entries
+        for (Result.ExtraEntry e: result.getExtraEntries()) {
+            at.addRow(e.getType(), e.getMeal(), "");
+        }
+
+        // Bottom rule
+        at.addRule();
+
+        // Render and print
+        System.out.println(at.render(128));
+
+    }
 
 }
