@@ -16,6 +16,15 @@ import java.util.List;
 import java.util.Stack;
 
 public class Mensaplan {
+
+    private static final String HELP_STRING = "mensaplan: An (unofficial) CLI for the cafeteria menues of RWTH Aachen University\n" +
+        "Currently, only German is supported.\n" +
+        "Options:\n"+
+        "-d [day]    Day of the week. Accepts German capitalized named, e.g., Dienstag.\n"+
+        "            By default (without -d), today's menu is printed.\n"+
+        "-m [mensa]  The mensa to query. Is matched to the closest existing mensa.\n"+
+        "            By default (without -m), Mensa Academica is used.";
+
     public static void main(String[] args) {
 
         try {
@@ -47,11 +56,17 @@ public class Mensaplan {
                 String options = l.toString();
 
                 switch(cmd) {
-                    case "-d":   day = options;
+                    case "-h":
+                                System.out.println(HELP_STRING);
+                                return;
+                    case "-d":
+                                day = options;
                                 break;
-                    case "-m":   mensa = RWTHMensa.closestMensa(options);
+                    case "-m":
+                                mensa = RWTHMensa.closestMensa(options);
                                 break;
-                    default:    System.err.println("Invalid Argument: "+cmd+"\nTry -h for help!");
+                    default:
+                                System.err.println("Invalid Argument: "+cmd+"\nTry -h for help!");
                                 System.exit(1);
                 }
             }
