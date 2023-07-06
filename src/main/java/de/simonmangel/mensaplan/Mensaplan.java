@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 public class Mensaplan {
 
@@ -23,13 +24,16 @@ public class Mensaplan {
         "-d [day]    Day of the week. Accepts German capitalized named, e.g., Dienstag.\n"+
         "            By default (without -d), today's menu is printed.\n"+
         "-m [mensa]  The mensa to query. Is matched to the closest existing mensa.\n"+
-        "            By default (without -m), Mensa Academica is used.";
+        "            By default (without -m), Mensa Academica is used.\n"+
+        "-o          Change mode of operation to opening hours.\n"+
+        "            Instead of the day menu of the selected mensa, its opening hours are printed.";
 
     public static void main(String[] args) {
 
         try {
             String day = "Heute";
             RWTHMensa mensa = RWTHMensa.ACADEMICA;
+            OperationMode operationMode = OperationMode.PRINT_DAY_MENU;
 
             Stack<LinkedList<String>> arguments = new Stack<>();
             for(int i = 0; i<args.length;i++) {
@@ -65,16 +69,23 @@ public class Mensaplan {
                     case "-m":
                                 mensa = RWTHMensa.closestMensa(options);
                                 break;
+                    case "-o":
+                                operationMode = OperationMode.PRINT_OPENING_HOURS;
+                                break;
                     default:
                                 System.err.println("Invalid Argument: "+cmd+"\nTry -h for help!");
                                 System.exit(1);
                 }
             }
 
-            if(!isWeekDay(day))
-                throw new NotAWeekdayException(day);
-
-            printDayMenu(day,mensa);
+            if (operationMode == OperationMode.PRINT_DAY_MENU) {
+                if(!isWeekDay(day))
+                    throw new NotAWeekdayException(day);
+    
+                printDayMenu(day,mensa);
+            } else if (operationMode == OperationMode.PRINT_OPENING_HOURS) {
+                printOpeningHours(mensa);
+            }
 
         } catch(IOException e) {e.printStackTrace();}
         catch(NotAWeekdayException e) {e.printWeekday();}
@@ -188,6 +199,38 @@ public class Mensaplan {
         // Render and print
         System.out.println(at.render(128));
 
+    }
+
+    private static void printOpeningHours(RWTHMensa mensa) {
+        Document page = null;
+        try {
+            page = Jsoup.connect("https://www.studierendenwerk-aachen.de/de/gastronomie/mensen-und-cafeterien.html").get();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not fetch opening hours page", e);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Öffnungszeiten:\n\n");
+
+        Elements cafeteriaCards = page.select("div.cafeteria-details");
+
+        for (Element card: cafeteriaCards) {
+            card.select("br").before("\\n");
+            card.select("p").before("\\n");
+            String name = cleanText(card.selectFirst(".cafeteria-info").selectFirst("span.title").text());
+            if (name != null && name.replaceAll("ß","ss").equals(mensa.getLongName())) {
+                String openingHours = cleanText(card.selectFirst(".cafeteria-contact").selectFirst(".openings").text().replaceAll("\\\\n","\n"));
+                sb.append(String.format("%s\n---------------------------\n%s\n\n", name, openingHours));
+                break;
+            }
+        }
+
+        System.out.println(sb.toString());
+    }
+
+    private static String cleanText(String text) {
+        Pattern regex = Pattern.compile("\\s*\\n\\s*", Pattern.DOTALL);
+        return regex.matcher(text).replaceAll("\n").trim();
     }
 
 }
