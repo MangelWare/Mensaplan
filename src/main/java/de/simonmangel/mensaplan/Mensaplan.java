@@ -26,7 +26,9 @@ public class Mensaplan {
         "-m [mensa]  The mensa to query. Is matched to the closest existing mensa.\n"+
         "            By default (without -m), Mensa Academica is used.\n"+
         "-o          Change mode of operation to opening hours.\n"+
-        "            Instead of the day menu of the selected mensa, its opening hours are printed.";
+        "            Instead of the day menu of the selected mensa, its opening hours are printed.\n"+
+        "-l          Print a list of all mensas\n"+
+        "            (yeah, cafeterias would be correct English, but https://en.wikipedia.org/wiki/Sunk_cost)";
 
     public static void main(String[] args) {
 
@@ -72,6 +74,9 @@ public class Mensaplan {
                     case "-o":
                                 operationMode = OperationMode.PRINT_OPENING_HOURS;
                                 break;
+                    case "-l":
+                                operationMode = OperationMode.LIST_MENSAS;
+                                break;
                     default:
                                 System.err.println("Invalid Argument: "+cmd+"\nTry -h for help!");
                                 System.exit(1);
@@ -83,6 +88,10 @@ public class Mensaplan {
                     throw new NotAWeekdayException(day);
     
                 printDayMenu(day,mensa);
+            } else if (operationMode == OperationMode.LIST_MENSAS) {
+                for (RWTHMensa m : RWTHMensa.MENSEN) {
+                    System.out.println(m.getLongName());
+                }
             } else if (operationMode == OperationMode.PRINT_OPENING_HOURS) {
                 printOpeningHours(mensa);
             }
